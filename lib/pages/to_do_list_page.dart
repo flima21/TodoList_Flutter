@@ -1,13 +1,15 @@
+
 import 'package:flutter/material.dart';
 
 class ToDoListPage extends StatelessWidget {
-  const ToDoListPage({super.key});
+  ToDoListPage({super.key});
 
-  // bool get erroTask => 
-  
+  // forms to get text from field
+  final TextEditingController emailController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Color.fromARGB(255, 232, 232, 232),
       body: Center(
         child: Padding(
@@ -16,17 +18,39 @@ class ToDoListPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
+                controller: emailController,
                 autocorrect: true,
                 decoration: InputDecoration(
-                  labelText: 'New Task',
+                  labelText: 'E-mail',
                 ),
-                keyboardType: TextInputType.text,
+                keyboardType: TextInputType.emailAddress,
                 autofocus: true,
-              )
+                onChanged: onChangedEmail,
+                onSubmitted: onSubmittedEmail,
+              ),
+              ElevatedButton(
+                onPressed: login, 
+                child: Text("Entrar")
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  // get the value from textfield
+  void login(){
+    String text = emailController.text;
+  }
+
+  // get all the modifications in field
+  void onChangedEmail(String text) {
+
+  }
+
+  // when click the sumbit in keyboar
+  void onSubmittedEmail(String text) {
+
   }
 }
