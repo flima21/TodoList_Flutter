@@ -125,12 +125,7 @@ class _ToDoListPageState extends State<ToDoListPage> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
-          children: [
-            // Icon(Icons.delete),
-            Text('Task ${task.title} removed sucessefuly!', style: TextStyle(color: Colors.white),),
-          ],
-        ),
+        content: Text('Task ${task.title} removed sucessefuly!', style: TextStyle(color: Colors.white),),
         duration: Duration(seconds: 5),
         backgroundColor: Colors.grey.shade900,
         action: SnackBarAction(label: "Undo", textColor: Colors.blue, onPressed: () {
