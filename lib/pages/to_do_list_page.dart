@@ -12,6 +12,7 @@ class ToDoListPage extends StatefulWidget {
 class _ToDoListPageState extends State<ToDoListPage> {
   List<Task> tasks = [];
 
+  int? deletedTodoPos;
   bool isEmpty = false;
 
   // controllers
@@ -115,9 +116,30 @@ class _ToDoListPageState extends State<ToDoListPage> {
   }
 
   void onDelete(Task task) {
+    deletedTodoPos = tasks.indexOf(task);
+
     setState(() {
       tasks.remove(task);
     });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            // Icon(Icons.delete),
+            Text('Task ${task.title} removed sucessefuly!', style: TextStyle(color: Colors.white),),
+          ],
+        ),
+        duration: Duration(seconds: 5),
+        backgroundColor: Colors.grey.shade900,
+        action: SnackBarAction(label: "Undo", textColor: Colors.blue, onPressed: () {
+          setState(() {
+            tasks.insert(deletedTodoPos!,task);
+          });
+        }),
+      ),
+    );
   }
 
   void onStore() {
