@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:to_do_list/models/Task.dart';
+import 'package:to_do_list/widgets/to_do_list_item.dart';
 
 class ToDoListPage extends StatefulWidget {
   ToDoListPage({super.key});
@@ -8,7 +10,9 @@ class ToDoListPage extends StatefulWidget {
 }
 
 class _ToDoListPageState extends State<ToDoListPage> {
-  List<String> tasks = [];
+  List<Task> tasks = [];
+
+  bool isEmpty = false;
 
   // controllers
   final TextEditingController tasksController = TextEditingController();
@@ -31,18 +35,16 @@ class _ToDoListPageState extends State<ToDoListPage> {
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
+                      child: TextField(
                     controller: tasksController,
                     decoration: InputDecoration(
+                      errorText: isEmpty ? 'Required' : null,
                       border: OutlineInputBorder(),
                       labelText: 'Enter your task',
                       hintText: 'Example: study flutter',
                     ),
                     onSubmitted: (value) {
-                      setState(() {
-                        tasks.add(value);
-                        tasksController.clear();
-                      });
+                      onStore();
                     },
                   )),
                   SizedBox(
@@ -50,10 +52,7 @@ class _ToDoListPageState extends State<ToDoListPage> {
                   ),
                   ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          tasks.add(tasksController.text);
-                          tasksController.clear();
-                        });
+                        onStore();
                       },
                       style: ButtonStyle(
                         padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
@@ -66,7 +65,6 @@ class _ToDoListPageState extends State<ToDoListPage> {
                         size: 30,
                         color: Colors.white,
                       )),
-                      
                 ],
               ),
               SizedBox(
@@ -75,36 +73,38 @@ class _ToDoListPageState extends State<ToDoListPage> {
               Flexible(
                 child: ListView(
                   children: [
-                    for (String task in tasks)
-                      ListTile(
-                        title: Text(task),
-                        subtitle: Text(''),
-                        leading: Icon(Icons.task),
-                        onTap: () => {
-                          print('Task: $task')
-                        },
+                    for (Task task in tasks)
+                      ToDoListItem(
+                        task: task,
+                        onDelete: onDelete,
                       )
                   ],
                 ),
               ),
               Row(
                 children: [
-                  Expanded(child: Text("You have a 0 pendents task")),
+                  Expanded(
+                      child: Text("You have a ${tasks.length} pendents task")),
                   SizedBox(
                     width: 8,
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        tasks.clear();
-                      });
-                    },
-                    style: ButtonStyle(
-                      backgroundColor:
-                          WidgetStatePropertyAll<Color>(Colors.red),
-                    ),
-                    child: Text("Clear"),
-                  )
+                      onPressed: () {
+                        setState(() {
+                          tasks.clear();
+                          tasksController.clear();
+                        });
+                      },
+                      style: ButtonStyle(
+                        backgroundColor:
+                            WidgetStatePropertyAll<Color>(Colors.red),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete),
+                          Text("Clear"),
+                        ],
+                      ))
                 ],
               )
             ],
@@ -112,5 +112,23 @@ class _ToDoListPageState extends State<ToDoListPage> {
         ),
       ),
     );
+  }
+
+  void onDelete(Task task) {
+    setState(() {
+      tasks.remove(task);
+    });
+  }
+
+  void onStore() {
+    setState(() {
+      if (tasksController.text.isEmpty) {
+        isEmpty = true;
+      } else {
+        tasks.add(Task(title: tasksController.text, dateTime: DateTime.now()));
+        tasksController.clear();
+        isEmpty = false;
+      }
+    });
   }
 }
