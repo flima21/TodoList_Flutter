@@ -64,7 +64,3 @@ class ToDoListItem extends StatelessWidget {
     );
   }
 }
-
-void doNothing(BuildContext context) {
-  print(context);
-}
