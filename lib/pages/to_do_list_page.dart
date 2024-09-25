@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_list/models/Task.dart';
+import 'package:to_do_list/repository/task_repository.dart';
 import 'package:to_do_list/widgets/to_do_list_item.dart';
 
 class ToDoListPage extends StatefulWidget {
@@ -17,6 +18,18 @@ class _ToDoListPageState extends State<ToDoListPage> {
 
   // controllers
   final TextEditingController tasksController = TextEditingController();
+  final TaskRepository taskRepository = TaskRepository();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState(); // 
+    taskRepository.getAll().then((value) => 
+      setState(() {
+        tasks = value;
+      })
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +60,17 @@ class _ToDoListPageState extends State<ToDoListPage> {
                     onSubmitted: (value) {
                       onStore();
                     },
+                    onChanged: (value) {
+                      setState(() {
+                        isEmpty = value.isEmpty;
+                      });
+                    },
                   )),
                   SizedBox(
                     width: 8,
                   ),
                   ElevatedButton(
-                      onPressed: () {
-                        onStore();
-                      },
+                      onPressed: onStore,
                       style: ButtonStyle(
                         padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
                             EdgeInsets.all(15)),
@@ -90,12 +106,7 @@ class _ToDoListPageState extends State<ToDoListPage> {
                     width: 8,
                   ),
                   ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          tasks.clear();
-                          tasksController.clear();
-                        });
-                      },
+                      onPressed: onDialogDelete,
                       style: ButtonStyle(
                         backgroundColor:
                             WidgetStatePropertyAll<Color>(Colors.red),
@@ -115,12 +126,62 @@ class _ToDoListPageState extends State<ToDoListPage> {
     );
   }
 
+  void onDialogDelete() {
+    if (tasks.length > 0) {
+      showDialog(context: context, builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.delete), 
+            Text("Attention!")
+          ]
+        ),
+        content: Text("Are you sure you want to delete all tasks?"),
+        actions: [
+          TextButton(
+            onPressed: onDeleteAll, 
+            child: Text("Yes",style: TextStyle(color: Colors.blue),)
+          ),
+          TextButton(
+            onPressed: () { Navigator.of(context).pop(); }, 
+            child: Text("No",style: TextStyle(color: Colors.blue),)
+          ),
+        ],
+      ));
+    }
+
+    else {
+      showDialog(context: context, builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.delete), 
+            Text("Attention!")
+          ]
+        ),
+        content: Text("You do not have task to delete!"),
+        actions: [
+          TextButton(child: Text("Cancel"),onPressed: () { Navigator.of(context).pop(); },)
+        ],
+      ));
+    }
+  }
+
+  void onDeleteAll() {
+    setState(() {
+      tasks.clear();
+      Navigator.of(context).pop();
+    });
+
+    taskRepository.storeListTasks(tasks);
+  }
+
   void onDelete(Task task) {
     deletedTodoPos = tasks.indexOf(task);
 
     setState(() {
       tasks.remove(task);
     });
+
+    taskRepository.storeListTasks(tasks);
 
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -132,9 +193,11 @@ class _ToDoListPageState extends State<ToDoListPage> {
           setState(() {
             tasks.insert(deletedTodoPos!,task);
           });
+          taskRepository.storeListTasks(tasks);
         }),
       ),
     );
+
   }
 
   void onStore() {
@@ -145,6 +208,7 @@ class _ToDoListPageState extends State<ToDoListPage> {
         tasks.add(Task(title: tasksController.text, dateTime: DateTime.now()));
         tasksController.clear();
         isEmpty = false;
+        taskRepository.storeListTasks(tasks);
       }
     });
   }
